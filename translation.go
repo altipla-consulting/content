@@ -4,6 +4,10 @@ type Translation struct {
 	Content map[string]string
 }
 
+func NewTranslation() Translation {
+	return Translation{}
+}
+
 func (t *Translation) init() {
 	if t.Content == nil {
 		t.Content = map[string]string{}
@@ -36,6 +40,6 @@ func (t *Translation) Map() map[string]string {
 	return t.Content
 }
 
-func TranslationFromMap(m map[string]string) *Translation {
-	return &Translation{Content: m}
+func TranslationFromMap(m map[string]string) Translation {
+	return Translation{Content: m}
 }
