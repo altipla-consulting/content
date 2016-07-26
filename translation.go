@@ -1,5 +1,11 @@
 package content
 
+import (
+	"encoding/json"
+
+	"github.com/juju/errors"
+)
+
 type Translation struct {
 	Content map[string]string
 }
@@ -38,6 +44,21 @@ func (t *Translation) LangChain(lang string) string {
 
 func (t *Translation) Map() map[string]string {
 	return t.Content
+}
+
+func (t Translation) MarshalJSON() ([]byte, error) {
+	return json.Marshal(t.Map())
+}
+
+func (t *Translation) UnmarshalJSON(data []byte) error {
+	m := map[string]string{}
+	if err := json.Unmarshal(data, &m); err != nil {
+		return errors.Trace(err)
+	}
+
+	*t = TranslationFromMap(m)
+
+	return nil
 }
 
 func TranslationFromMap(m map[string]string) Translation {

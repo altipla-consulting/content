@@ -3,6 +3,10 @@ package content
 import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+
+	"bytes"
+	"encoding/json"
+	"strings"
 )
 
 var _ = Describe("Translation", func() {
@@ -70,5 +74,28 @@ var _ = Describe("Translation", func() {
 		})
 
 		Expect(t.LangChain("en")).To(Equal("bar"))
+	})
+
+	It("Should encode itself to JSON as a simple map", func() {
+		t := TranslationFromMap(map[string]string{
+			"en": "bar",
+			"it": "baz",
+		})
+
+		buf := bytes.NewBuffer(nil)
+		err := json.NewEncoder(buf).Encode(t)
+		Expect(err).To(Succeed())
+
+		Expect(buf.String()).To(MatchJSON(`{"en": "bar", "it": "baz"}`))
+	})
+
+	It("Should decode itself from JSON as a simple map", func() {
+		buf := strings.NewReader(`{"en": "bar", "it": "baz"}`)
+		t := NewTranslation()
+		err := json.NewDecoder(buf).Decode(&t)
+		Expect(err).To(Succeed())
+
+		Expect(t.Get("en")).To(Equal("bar"))
+		Expect(t.Get("it")).To(Equal("baz"))
 	})
 })
