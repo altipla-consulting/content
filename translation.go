@@ -65,13 +65,21 @@ func TranslationFromMap(m map[string]string) Translation {
 	return Translation{Content: m}
 }
 
-func TestTranslations(suffix string) Translation {
-	return TranslationFromMap(map[string]string{
-		"es": "foo-" + suffix,
-		"en": "bar-" + suffix,
-	})
+func TestTranslation(suffix string) Translation {
+	return TranslationFromMap(TestMap(suffix))
 }
 
-func CheckTranslations(suffix string, m map[string]string) bool {
-	return m["es"] == "foo-"+suffix && m["en"] == "bar-"+suffix
+func CheckTranslation(suffix string, t Translation) bool {
+	return t.Content["es"] == "foo-"+suffix && t.Content["en"] == "bar-"+suffix
+}
+
+func TestMap(suffix string) map[string]string {
+	return map[string]string{
+		"es": "foo-" + suffix,
+		"en": "bar-" + suffix,
+	}
+}
+
+func CheckMap(suffix string, m map[string]string) bool {
+	return CheckTranslation(suffix, TranslationFromMap(m))
 }
