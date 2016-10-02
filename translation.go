@@ -64,3 +64,14 @@ func (t *Translation) UnmarshalJSON(data []byte) error {
 func TranslationFromMap(m map[string]string) Translation {
 	return Translation{Content: m}
 }
+
+func TestTranslations(suffix string) Translation {
+	return TranslationFromMap(map[string]string{
+		"es": "foo-" + suffix,
+		"en": "bar-" + suffix,
+	})
+}
+
+func CheckTranslations(suffix string, m map[string]string) bool {
+	return m["es"] == "foo-"+suffix && m["en"] == "bar-"+suffix
+}
