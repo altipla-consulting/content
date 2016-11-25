@@ -1,4 +1,4 @@
 
 # content
 
-Framework para contenido en los microservicios.
+Framework para contenido con l10n.
