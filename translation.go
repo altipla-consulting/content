@@ -83,3 +83,8 @@ func TestMap(suffix string) map[string]string {
 func CheckMap(suffix string, m map[string]string) bool {
 	return CheckTranslation(suffix, TranslationFromMap(m))
 }
+
+func LangChain(m map[string]string, lang string) string {
+	t := TranslationFromMap(m)
+	return t.LangChain(lang)
+}
