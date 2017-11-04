@@ -1,9 +1,6 @@
 package content
 
 import (
-	// "bytes"
-	// "encoding/json"
-	// "strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -13,8 +10,8 @@ import (
 )
 
 var (
-	sess          sqlbuilder.Database
-	testingModels db.Collection
+	translatedSess   sqlbuilder.Database
+	translatedModels db.Collection
 )
 
 type testTranslatedModel struct {
@@ -36,13 +33,13 @@ func initTranslatedDB(t *testing.T) {
 		},
 	}
 	var err error
-	sess, err = mysql.Open(cnf)
+	translatedSess, err = mysql.Open(cnf)
 	require.Nil(t, err)
 
-	_, err = sess.Exec(`DROP TABLE IF EXISTS translated_test`)
+	_, err = translatedSess.Exec(`DROP TABLE IF EXISTS translated_test`)
 	require.Nil(t, err)
 
-	_, err = sess.Exec(`
+	_, err = translatedSess.Exec(`
 		CREATE TABLE translated_test (
 	  	id INT(11) NOT NULL AUTO_INCREMENT,
 			name JSON,
@@ -53,45 +50,45 @@ func initTranslatedDB(t *testing.T) {
 	`)
 	require.Nil(t, err)
 
-	testingModels = sess.Collection("translated_test")
+	translatedModels = translatedSess.Collection("translated_test")
 
-	require.Nil(t, testingModels.Truncate())
+	require.Nil(t, translatedModels.Truncate())
 }
 
 func finishTranslatedDB() {
-	sess.Close()
+	translatedSess.Close()
 }
 
-func TestLoadSave(t *testing.T) {
+func TestLoadSaveTranslated(t *testing.T) {
 	initTranslatedDB(t)
 	defer finishTranslatedDB()
 
 	model := new(testTranslatedModel)
-	require.Nil(t, testingModels.InsertReturning(model))
+	require.Nil(t, translatedModels.InsertReturning(model))
 
 	require.EqualValues(t, model.ID, 1)
 
 	other := new(testTranslatedModel)
-	require.Nil(t, testingModels.Find(1).One(other))
+	require.Nil(t, translatedModels.Find(1).One(other))
 }
 
-func TestLoadSaveContent(t *testing.T) {
+func TestLoadSaveTranslatedWithContent(t *testing.T) {
 	initTranslatedDB(t)
 	defer finishTranslatedDB()
 
 	model := &testTranslatedModel{
 		Name: map[string]string{"es": "foo", "en": "bar"},
 	}
-	require.Nil(t, testingModels.InsertReturning(model))
+	require.Nil(t, translatedModels.InsertReturning(model))
 
 	other := new(testTranslatedModel)
-	require.Nil(t, testingModels.Find(1).One(other))
+	require.Nil(t, translatedModels.Find(1).One(other))
 
 	require.Equal(t, other.Name["es"], "foo")
 	require.Equal(t, other.Name["en"], "bar")
 }
 
-func TestLangChain(t *testing.T) {
+func TestTranslatedLangChain(t *testing.T) {
 	tests := []struct {
 		content Translated
 		chain   string

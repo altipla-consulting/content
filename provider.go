@@ -1,50 +1,65 @@
 package content
 
-// import (
-//   "database/sql/driver"
-//   "encoding/json"
-//   "fmt"
-// )
+import (
+	"database/sql/driver"
+	"encoding/json"
+	"fmt"
+)
 
-// type Provider map[string]string
+var globalProviderChain = []string{}
 
-// // LangChain runs the lang chain over the contents of the container.
-// func (content Provider) Chain(lang string) string {
-//   return LangChain(content, lang)
-// }
+type Provider map[string]string
 
-// func (content Provider) Value() (driver.Value, error) {
-//   serialized, err := json.Marshal(content)
-//   if err != nil {
-//     return nil, fmt.Errorf("content/translated: cannot serialize value: %s", err)
-//   }
+// Chain returns the value of the first provider of the global chain list
+// that has content. If no provider has content it will return an empty string.
+func (content Provider) Chain() string {
+	return content.CustomChain(globalProviderChain)
+}
 
-//   return serialized, nil
-// }
+// CustomChain returns the value of the first provider of the chain list
+// that has content. If no chain is provided it returns a random one. If no
+// provider has content it will return an empty string.
+func (content Provider) CustomChain(chain []string) string {
+	if len(chain) == 0 {
+		for _, v := range content {
+			return v
+		}
+	}
 
-// func (content *Provider) Scan(value interface{}) error {
-//   b, ok := value.([]byte)
-//   if !ok {
-//     return fmt.Errorf("content/translated: cannot scan type into bytes: %T", value)
-//   }
+	for _, p := range chain {
+		if content[p] != "" {
+			return content[p]
+		}
+	}
 
-//   if err := json.Unmarshal(b, content); err != nil {
-//     return fmt.Errorf("content/translated: cannot scan value: %s", err)
-//   }
+	return ""
+}
 
-//   return nil
-// }
+func (content Provider) Value() (driver.Value, error) {
+	serialized, err := json.Marshal(content)
+	if err != nil {
+		return nil, fmt.Errorf("content/providerº: cannot serialize value: %s", err)
+	}
 
-// // LangChain returns a value following a prearranged chain of preference.
-// //
-// // The chain gives preference to the requested lang, then english and finally spanish
-// // if no other translation is available.
-// func LangChain(translations map[string]string, lang string) string {
-//   if translations[lang] != "" {
-//     return translations[lang]
-//   }
-//   if translations["en"] != "" {
-//     return translations["en"]
-//   }
-//   return translations["es"]
-// }
+	return serialized, nil
+}
+
+func (content *Provider) Scan(value interface{}) error {
+	b, ok := value.([]byte)
+	if !ok {
+		return fmt.Errorf("content/provider: cannot scan type into bytes: %T", value)
+	}
+
+	if err := json.Unmarshal(b, content); err != nil {
+		return fmt.Errorf("content/provider: cannot scan value: %s", err)
+	}
+
+	return nil
+}
+
+// SetGlobalProviderChain configures the global chain of providers when calling
+// a Provider.Chain() method. It is NOT thread-safe, you should call it at init()
+// when starting the app and it shouldn't change again never.
+func SetGlobalProviderChain(chain []string) {
+	globalProviderChain = chain
+}

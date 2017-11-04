@@ -1,115 +1,139 @@
 package content
 
-// import (
-//   // "bytes"
-//   // "encoding/json"
-//   // "strings"
-//   "testing"
+import (
+	"testing"
 
-//   "github.com/stretchr/testify/require"
-//   "upper.io/db.v3"
-//   "upper.io/db.v3/lib/sqlbuilder"
-//   "upper.io/db.v3/mysql"
-// )
+	"github.com/stretchr/testify/require"
+	"upper.io/db.v3"
+	"upper.io/db.v3/lib/sqlbuilder"
+	"upper.io/db.v3/mysql"
+)
 
-// var (
-//   sess          sqlbuilder.Database
-//   testingModels db.Collection
-// )
+var (
+	providerSess   sqlbuilder.Database
+	providerModels db.Collection
+)
 
-// type testTranslatedModel struct {
-//   ID          int64      `db:"id,omitempty"`
-//   Name        Translated `db:"name"`
-//   Description Translated `db:"description"`
-// }
+type testProviderModel struct {
+	ID          int64    `db:"id,omitempty"`
+	Name        Provider `db:"name"`
+	Description Provider `db:"description"`
+}
 
-// func initTranslatedDB(t *testing.T) {
-//   cnf := &mysql.ConnectionURL{
-//     User:     "dev-user",
-//     Password: "dev-password",
-//     Host:     "localhost",
-//     Database: "test",
-//     Options: map[string]string{
-//       "charset":   "utf8mb4",
-//       "collation": "utf8mb4_bin",
-//       "parseTime": "true",
-//     },
-//   }
-//   var err error
-//   sess, err = mysql.Open(cnf)
-//   require.Nil(t, err)
+func initProviderDB(t *testing.T) {
+	cnf := &mysql.ConnectionURL{
+		User:     "dev-user",
+		Password: "dev-password",
+		Host:     "localhost",
+		Database: "test",
+		Options: map[string]string{
+			"charset":   "utf8mb4",
+			"collation": "utf8mb4_bin",
+			"parseTime": "true",
+		},
+	}
+	var err error
+	providerSess, err = mysql.Open(cnf)
+	require.Nil(t, err)
 
-//   _, err = sess.Exec(`DROP TABLE IF EXISTS translated_test`)
-//   require.Nil(t, err)
+	_, err = providerSess.Exec(`DROP TABLE IF EXISTS translated_test`)
+	require.Nil(t, err)
 
-//   _, err = sess.Exec(`
-//     CREATE TABLE translated_test (
-//       id INT(11) NOT NULL AUTO_INCREMENT,
-//       name JSON,
-//       description JSON,
+	_, err = providerSess.Exec(`
+    CREATE TABLE translated_test (
+      id INT(11) NOT NULL AUTO_INCREMENT,
+      name JSON,
+      description JSON,
 
-//       PRIMARY KEY(id)
-//     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
-//   `)
-//   require.Nil(t, err)
+      PRIMARY KEY(id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
+  `)
+	require.Nil(t, err)
 
-//   testingModels = sess.Collection("translated_test")
+	providerModels = providerSess.Collection("translated_test")
 
-//   require.Nil(t, testingModels.Truncate())
-// }
+	require.Nil(t, providerModels.Truncate())
+}
 
-// func finishTranslatedDB() {
-//   sess.Close()
-// }
+func finishProviderDB() {
+	providerSess.Close()
+}
 
-// func TestLoadSave(t *testing.T) {
-//   initTranslatedDB(t)
-//   defer finishTranslatedDB()
+func TestLoadSaveProvider(t *testing.T) {
+	initProviderDB(t)
+	defer finishProviderDB()
 
-//   model := new(testTranslatedModel)
-//   require.Nil(t, testingModels.InsertReturning(model))
+	model := new(testProviderModel)
+	require.Nil(t, providerModels.InsertReturning(model))
 
-//   require.EqualValues(t, model.ID, 1)
+	require.EqualValues(t, model.ID, 1)
 
-//   other := new(testTranslatedModel)
-//   require.Nil(t, testingModels.Find(1).One(other))
-// }
+	other := new(testProviderModel)
+	require.Nil(t, providerModels.Find(1).One(other))
+}
 
-// func TestLoadSaveContent(t *testing.T) {
-//   initTranslatedDB(t)
-//   defer finishTranslatedDB()
+func TestLoadSaveProviderWithContent(t *testing.T) {
+	initProviderDB(t)
+	defer finishProviderDB()
 
-//   model := &testTranslatedModel{
-//     Name: map[string]string{"es": "foo", "en": "bar"},
-//   }
-//   require.Nil(t, testingModels.InsertReturning(model))
+	model := &testProviderModel{
+		Name: map[string]string{"altipla": "foo", "hotelbeds": "bar"},
+	}
+	require.Nil(t, providerModels.InsertReturning(model))
 
-//   other := new(testTranslatedModel)
-//   require.Nil(t, testingModels.Find(1).One(other))
+	other := new(testProviderModel)
+	require.Nil(t, providerModels.Find(1).One(other))
 
-//   require.Equal(t, other.Name["es"], "foo")
-//   require.Equal(t, other.Name["en"], "bar")
-// }
+	require.Equal(t, other.Name["altipla"], "foo")
+	require.Equal(t, other.Name["hotelbeds"], "bar")
+}
 
-// func TestLangChain(t *testing.T) {
-//   tests := []struct {
-//     content Translated
-//     chain   string
-//   }{
-//     {
-//       map[string]string{"es": "foo", "en": "bar", "fr": "baz"},
-//       "baz",
-//     },
-//     {
-//       map[string]string{"es": "foo", "en": "bar", "de": "baz"},
-//       "bar",
-//     },
-//     {
-//       map[string]string{"es": "foo", "it": "bar", "de": "baz"},
-//       "foo",
-//     },
-//   }
-//   for _, test := range tests {
-//     require.Equal(t, test.content.LangChain("fr"), test.chain)
-//   }
-// }
+func TestProviderGlobalChain(t *testing.T) {
+	SetGlobalProviderChain([]string{"altipla", "hotelbeds", "dingus"})
+
+	tests := []struct {
+		content Provider
+		chain   string
+	}{
+		{
+			map[string]string{"altipla": "foo", "hotelbeds": "bar", "dingus": "baz"},
+			"foo",
+		},
+		{
+			map[string]string{"other1": "foo", "hotelbeds": "bar", "dingus": "baz"},
+			"bar",
+		},
+		{
+			map[string]string{"other1": "foo", "other2": "bar", "dingus": "baz"},
+			"baz",
+		},
+	}
+	for _, test := range tests {
+		require.Equal(t, test.content.Chain(), test.chain)
+	}
+}
+
+func TestProviderCustomChain(t *testing.T) {
+	SetGlobalProviderChain([]string{"dingus", "tirpadvisor", "other"})
+
+	tests := []struct {
+		content Provider
+		chain   string
+	}{
+		{
+			map[string]string{"altipla": "foo", "hotelbeds": "bar", "dingus": "baz"},
+			"foo",
+		},
+		{
+			map[string]string{"other1": "foo", "hotelbeds": "bar", "dingus": "baz"},
+			"bar",
+		},
+		{
+			map[string]string{"other1": "foo", "other2": "bar", "dingus": "baz"},
+			"baz",
+		},
+	}
+	for _, test := range tests {
+		require.Equal(t, test.content.CustomChain([]string{"altipla", "hotelbeds", "dingus"}), test.chain)
+	}
+}
