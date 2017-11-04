@@ -77,7 +77,7 @@ func TestLoadSaveTranslatedWithContent(t *testing.T) {
 	defer finishTranslatedDB()
 
 	model := &testTranslatedModel{
-		Name: map[string]string{"es": "foo", "en": "bar"},
+		Name: Translated{"es": "foo", "en": "bar"},
 	}
 	require.Nil(t, translatedModels.InsertReturning(model))
 
@@ -94,15 +94,15 @@ func TestTranslatedLangChain(t *testing.T) {
 		chain   string
 	}{
 		{
-			map[string]string{"es": "foo", "en": "bar", "fr": "baz"},
+			Translated{"es": "foo", "en": "bar", "fr": "baz"},
 			"baz",
 		},
 		{
-			map[string]string{"es": "foo", "en": "bar", "de": "baz"},
+			Translated{"es": "foo", "en": "bar", "de": "baz"},
 			"bar",
 		},
 		{
-			map[string]string{"es": "foo", "it": "bar", "de": "baz"},
+			Translated{"es": "foo", "it": "bar", "de": "baz"},
 			"foo",
 		},
 	}

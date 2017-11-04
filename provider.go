@@ -17,8 +17,10 @@ func (content Provider) Chain() string {
 }
 
 // CustomChain returns the value of the first provider of the chain list
-// that has content. If no chain is provided it returns a random one. If no
+// that has content. If no chain is provided it returns a random provider. If no
 // provider has content it will return an empty string.
+//
+// Any provider not in the list won't count the in the chain at all, it will be ignored.
 func (content Provider) CustomChain(chain []string) string {
 	if len(chain) == 0 {
 		for _, v := range content {
@@ -38,7 +40,7 @@ func (content Provider) CustomChain(chain []string) string {
 func (content Provider) Value() (driver.Value, error) {
 	serialized, err := json.Marshal(content)
 	if err != nil {
-		return nil, fmt.Errorf("content/providerº: cannot serialize value: %s", err)
+		return nil, fmt.Errorf("content/provider: cannot serialize value: %s", err)
 	}
 
 	return serialized, nil

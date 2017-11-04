@@ -77,7 +77,7 @@ func TestLoadSaveProviderWithContent(t *testing.T) {
 	defer finishProviderDB()
 
 	model := &testProviderModel{
-		Name: map[string]string{"altipla": "foo", "hotelbeds": "bar"},
+		Name: Provider{"altipla": "foo", "hotelbeds": "bar"},
 	}
 	require.Nil(t, providerModels.InsertReturning(model))
 
@@ -96,16 +96,24 @@ func TestProviderGlobalChain(t *testing.T) {
 		chain   string
 	}{
 		{
-			map[string]string{"altipla": "foo", "hotelbeds": "bar", "dingus": "baz"},
+			Provider{"altipla": "foo", "hotelbeds": "bar", "dingus": "baz"},
 			"foo",
 		},
 		{
-			map[string]string{"other1": "foo", "hotelbeds": "bar", "dingus": "baz"},
+			Provider{"other1": "foo", "hotelbeds": "bar", "dingus": "baz"},
 			"bar",
 		},
 		{
-			map[string]string{"other1": "foo", "other2": "bar", "dingus": "baz"},
+			Provider{"other1": "foo", "other2": "bar", "dingus": "baz"},
 			"baz",
+		},
+		{
+			Provider{"other1": "foo", "other2": "bar", "dingus": "baz"},
+			"baz",
+		},
+		{
+			Provider{"foo": "bar"},
+			"",
 		},
 	}
 	for _, test := range tests {
@@ -116,24 +124,6 @@ func TestProviderGlobalChain(t *testing.T) {
 func TestProviderCustomChain(t *testing.T) {
 	SetGlobalProviderChain([]string{"dingus", "tirpadvisor", "other"})
 
-	tests := []struct {
-		content Provider
-		chain   string
-	}{
-		{
-			map[string]string{"altipla": "foo", "hotelbeds": "bar", "dingus": "baz"},
-			"foo",
-		},
-		{
-			map[string]string{"other1": "foo", "hotelbeds": "bar", "dingus": "baz"},
-			"bar",
-		},
-		{
-			map[string]string{"other1": "foo", "other2": "bar", "dingus": "baz"},
-			"baz",
-		},
-	}
-	for _, test := range tests {
-		require.Equal(t, test.content.CustomChain([]string{"altipla", "hotelbeds", "dingus"}), test.chain)
-	}
+	content := Provider{"altipla": "foo", "hotelbeds": "bar", "dingus": "baz"}
+	require.Equal(t, content.CustomChain([]string{"altipla", "hotelbeds", "dingus"}), "foo")
 }
