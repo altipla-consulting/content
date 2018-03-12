@@ -36,11 +36,11 @@ func initProviderDB(t *testing.T) {
 	providerSess, err = mysql.Open(cnf)
 	require.Nil(t, err)
 
-	_, err = providerSess.Exec(`DROP TABLE IF EXISTS translated_test`)
+	_, err = providerSess.Exec(`DROP TABLE IF EXISTS provider_test`)
 	require.Nil(t, err)
 
 	_, err = providerSess.Exec(`
-    CREATE TABLE translated_test (
+    CREATE TABLE provider_test (
       id INT(11) NOT NULL AUTO_INCREMENT,
       name JSON,
       description JSON,
@@ -50,7 +50,7 @@ func initProviderDB(t *testing.T) {
   `)
 	require.Nil(t, err)
 
-	providerModels = providerSess.Collection("translated_test")
+	providerModels = providerSess.Collection("provider_test")
 
 	require.Nil(t, providerModels.Truncate())
 }
@@ -126,4 +126,33 @@ func TestProviderCustomChain(t *testing.T) {
 
 	content := Provider{"altipla": "foo", "hotelbeds": "bar", "dingus": "baz"}
 	require.Equal(t, content.CustomChain([]string{"altipla", "hotelbeds", "dingus"}), "foo")
+}
+
+func TestProviderSaveNil(t *testing.T) {
+	initProviderDB(t)
+	defer finishProviderDB()
+
+	model := new(testProviderModel)
+	require.Nil(t, providerModels.InsertReturning(model))
+
+	row, err := providerSess.QueryRow(`SELECT name FROM provider_test`)
+	require.NoError(t, err)
+
+	var name string
+	require.NoError(t, row.Scan(&name))
+	require.Equal(t, "{}", name)
+}
+
+func TestProviderLoadNil(t *testing.T) {
+	initProviderDB(t)
+	defer finishProviderDB()
+
+	_, err := providerSess.Exec(`INSERT INTO provider_test(name, description) VALUES ('null', 'null')`)
+	require.NoError(t, err)
+
+	model := new(testProviderModel)
+	require.Nil(t, providerModels.Find(1).One(model))
+
+	require.NotNil(t, model.Name)
+	require.Len(t, model.Name, 0)
 }

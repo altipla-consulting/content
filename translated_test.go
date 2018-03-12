@@ -110,3 +110,32 @@ func TestTranslatedLangChain(t *testing.T) {
 		require.Equal(t, test.content.LangChain("fr"), test.chain)
 	}
 }
+
+func TestTranslatedSaveNil(t *testing.T) {
+	initTranslatedDB(t)
+	defer finishTranslatedDB()
+
+	model := new(testTranslatedModel)
+	require.Nil(t, translatedModels.InsertReturning(model))
+
+	row, err := translatedSess.QueryRow(`SELECT name FROM translated_test`)
+	require.NoError(t, err)
+
+	var name string
+	require.NoError(t, row.Scan(&name))
+	require.Equal(t, "{}", name)
+}
+
+func TestTranslatedLoadNil(t *testing.T) {
+	initTranslatedDB(t)
+	defer finishTranslatedDB()
+
+	_, err := translatedSess.Exec(`INSERT INTO translated_test(name, description) VALUES ('null', 'null')`)
+	require.NoError(t, err)
+
+	model := new(testTranslatedModel)
+	require.Nil(t, translatedModels.Find(1).One(model))
+
+	require.NotNil(t, model.Name)
+	require.Len(t, model.Name, 0)
+}

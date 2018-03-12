@@ -36,11 +36,11 @@ func initTranslatedProviderDB(t *testing.T) {
 	translatedProviderSess, err = mysql.Open(cnf)
 	require.Nil(t, err)
 
-	_, err = translatedProviderSess.Exec(`DROP TABLE IF EXISTS translated_test`)
+	_, err = translatedProviderSess.Exec(`DROP TABLE IF EXISTS translated_provider_test`)
 	require.Nil(t, err)
 
 	_, err = translatedProviderSess.Exec(`
-    CREATE TABLE translated_test (
+    CREATE TABLE translated_provider_test (
       id INT(11) NOT NULL AUTO_INCREMENT,
       name JSON,
       description JSON,
@@ -50,7 +50,7 @@ func initTranslatedProviderDB(t *testing.T) {
   `)
 	require.Nil(t, err)
 
-	translatedProviderModels = translatedProviderSess.Collection("translated_test")
+	translatedProviderModels = translatedProviderSess.Collection("translated_provider_test")
 
 	require.Nil(t, translatedProviderModels.Truncate())
 }
@@ -238,4 +238,33 @@ func TestTranslatedProviderGetProvider(t *testing.T) {
 	require.Equal(t, content.Provider("hotelbeds"), Translated{})
 
 	require.Equal(t, content.Provider("altipla"), Translated{"es": "foo"})
+}
+
+func TestTranslatedProviderSaveNil(t *testing.T) {
+	initTranslatedProviderDB(t)
+	defer finishTranslatedProviderDB()
+
+	model := new(testTranslatedProviderModel)
+	require.Nil(t, translatedProviderModels.InsertReturning(model))
+
+	row, err := translatedProviderSess.QueryRow(`SELECT name FROM translated_provider_test`)
+	require.NoError(t, err)
+
+	var name string
+	require.NoError(t, row.Scan(&name))
+	require.Equal(t, "{}", name)
+}
+
+func TestTranslatedTranslatedProviderLoadNil(t *testing.T) {
+	initTranslatedProviderDB(t)
+	defer finishTranslatedProviderDB()
+
+	_, err := translatedProviderSess.Exec(`INSERT INTO translated_provider_test(name, description) VALUES ('null', 'null')`)
+	require.NoError(t, err)
+
+	model := new(testTranslatedProviderModel)
+	require.Nil(t, translatedProviderModels.Find(1).One(model))
+
+	require.NotNil(t, model.Name)
+	require.Len(t, model.Name, 0)
 }

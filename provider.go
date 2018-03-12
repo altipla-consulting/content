@@ -38,6 +38,10 @@ func (content Provider) CustomChain(chain []string) string {
 }
 
 func (content Provider) Value() (driver.Value, error) {
+	if content == nil {
+		return "{}", nil
+	}
+
 	serialized, err := json.Marshal(content)
 	if err != nil {
 		return nil, fmt.Errorf("content/provider: cannot serialize value: %s", err)
@@ -54,6 +58,10 @@ func (content *Provider) Scan(value interface{}) error {
 
 	if err := json.Unmarshal(b, content); err != nil {
 		return fmt.Errorf("content/provider: cannot scan value: %s", err)
+	}
+
+	if *content == nil {
+		*content = Provider{}
 	}
 
 	return nil

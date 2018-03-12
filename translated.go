@@ -14,6 +14,10 @@ func (content Translated) LangChain(lang string) string {
 }
 
 func (content Translated) Value() (driver.Value, error) {
+	if content == nil {
+		return "{}", nil
+	}
+
 	serialized, err := json.Marshal(content)
 	if err != nil {
 		return nil, fmt.Errorf("content/translated: cannot serialize value: %s", err)
@@ -30,6 +34,10 @@ func (content *Translated) Scan(value interface{}) error {
 
 	if err := json.Unmarshal(b, content); err != nil {
 		return fmt.Errorf("content/translated: cannot scan value: %s", err)
+	}
+
+	if *content == nil {
+		*content = Translated{}
 	}
 
 	return nil

@@ -60,6 +60,10 @@ func (content TranslatedProvider) CustomChain(chain []string) Translated {
 }
 
 func (content TranslatedProvider) Value() (driver.Value, error) {
+	if content == nil {
+		return "{}", nil
+	}
+
 	serialized, err := json.Marshal(content)
 	if err != nil {
 		return nil, fmt.Errorf("content/translated-provider: cannot serialize value: %s", err)
@@ -76,6 +80,10 @@ func (content *TranslatedProvider) Scan(value interface{}) error {
 
 	if err := json.Unmarshal(b, content); err != nil {
 		return fmt.Errorf("content/translated-provider: cannot scan value: %s", err)
+	}
+
+	if *content == nil {
+		*content = TranslatedProvider{}
 	}
 
 	return nil
