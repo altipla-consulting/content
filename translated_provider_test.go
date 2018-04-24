@@ -222,6 +222,129 @@ func TestTranslatedProviderCustomChain(t *testing.T) {
 	})
 }
 
+func TestTranslatedProviderGlobalChainProvider(t *testing.T) {
+	SetGlobalProviderChain([]string{"altipla", "hotelbeds", "dingus"})
+
+	tests := []struct {
+		content TranslatedProvider
+		chain   Translated
+	}{
+		{
+			TranslatedProvider{
+				"altipla": Translated{
+					"es": "foo-es",
+					"en": "foo-en",
+				},
+				"hotelbeds": Translated{
+					"es": "bar-es",
+					"en": "bar-en",
+				},
+				"dingus": Translated{
+					"es": "baz-es",
+					"en": "baz-en",
+				},
+			},
+			Translated{
+				"es": "altipla",
+				"en": "altipla",
+			},
+		},
+		{
+			TranslatedProvider{
+				"altipla": Translated{
+					"es": "foo-es",
+					"en": "foo-en",
+				},
+				"hotelbeds": Translated{
+					"es": "bar-es",
+					"en": "bar-en",
+				},
+				"dingus": Translated{
+					"es": "baz-es",
+					"en": "baz-en",
+					"it": "baz-it",
+				},
+			},
+			Translated{
+				"es": "altipla",
+				"en": "altipla",
+				"it": "dingus",
+			},
+		},
+		{
+			TranslatedProvider{
+				"altipla": Translated{
+					"es": "foo-es",
+				},
+				"hotelbeds": Translated{
+					"es": "bar-es",
+					"en": "bar-en",
+				},
+				"dingus": Translated{
+					"es": "baz-es",
+					"en": "baz-en",
+				},
+			},
+			Translated{
+				"es": "altipla",
+				"en": "hotelbeds",
+			},
+		},
+		{
+			TranslatedProvider{
+				"altipla": Translated{
+					"es": "foo-es",
+				},
+				"hotelbeds": Translated{
+					"es": "bar-es",
+					"en": "bar-en",
+				},
+				"tripadvisor": Translated{
+					"it": "qux-it",
+				},
+			},
+			Translated{
+				"es": "altipla",
+				"en": "hotelbeds",
+			},
+		},
+		{
+			TranslatedProvider{
+				"tripadvisor": Translated{
+					"it": "qux-it",
+				},
+			},
+			Translated{},
+		},
+	}
+	for _, test := range tests {
+		require.Equal(t, test.content.ChainProvider(), test.chain)
+	}
+}
+
+func TestTranslatedProviderCustomChainProvider(t *testing.T) {
+	SetGlobalProviderChain([]string{"dingus", "tirpadvisor", "other"})
+
+	content := TranslatedProvider{
+		"altipla": Translated{
+			"es": "foo-es",
+			"en": "foo-en",
+		},
+		"hotelbeds": Translated{
+			"es": "bar-es",
+			"en": "bar-en",
+		},
+		"dingus": Translated{
+			"es": "baz-es",
+			"en": "baz-en",
+		},
+	}
+	require.Equal(t, content.CustomChainProvider([]string{"altipla", "hotelbeds", "dingus"}), Translated{
+		"es": "altipla",
+		"en": "altipla",
+	})
+}
+
 func TestTranslatedProviderSetValue(t *testing.T) {
 	content := make(TranslatedProvider)
 	content.SetValue("hotelbeds", "es", "value")

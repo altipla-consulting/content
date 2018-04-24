@@ -33,6 +33,12 @@ func (content TranslatedProvider) Chain() Translated {
 	return content.CustomChain(globalProviderChain)
 }
 
+// ChainProvider returns the first provider of every language of the global chain list
+// that has content.
+func (content TranslatedProvider) ChainProvider() Translated {
+	return content.CustomChainProvider(globalProviderChain)
+}
+
 // CustomChain returns the value of every language of the first provider of the chain list
 // that has content. If no chain is provided it returns a random provider.
 //
@@ -53,6 +59,36 @@ func (content TranslatedProvider) CustomChain(chain []string) Translated {
 	for _, p := range inverseChain {
 		for lang, value := range content[p] {
 			result[lang] = value
+		}
+	}
+
+	return result
+}
+
+// CustomChainProvider returns the first provider of every language of the chain list
+// that has content. If no chain is provided it returns a random provider.
+//
+// Any provider not in the list won't count the in the chain at all, it will be ignored.
+func (content TranslatedProvider) CustomChainProvider(chain []string) Translated {
+	if len(chain) == 0 {
+		for p, v := range content {
+			reply := make(Translated)
+			for lang := range v {
+				reply[lang] = p
+			}
+			return reply
+		}
+	}
+
+	inverseChain := make([]string, 0, len(chain))
+	for i := len(chain) - 1; i >= 0; i-- {
+		inverseChain = append(inverseChain, chain[i])
+	}
+
+	result := make(Translated)
+	for _, p := range inverseChain {
+		for lang := range content[p] {
+			result[lang] = p
 		}
 	}
 
