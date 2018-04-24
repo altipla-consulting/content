@@ -16,6 +16,12 @@ func (content Provider) Chain() string {
 	return content.CustomChain(globalProviderChain)
 }
 
+// ChainProvider returns the first provider of the global chain list
+// that has content. If no provider has content it will return an empty string.
+func (content Provider) ChainProvider() string {
+	return content.CustomChainProvider(globalProviderChain)
+}
+
 // CustomChain returns the value of the first provider of the chain list
 // that has content. If no chain is provided it returns a random provider. If no
 // provider has content it will return an empty string.
@@ -31,6 +37,27 @@ func (content Provider) CustomChain(chain []string) string {
 	for _, p := range chain {
 		if content[p] != "" {
 			return content[p]
+		}
+	}
+
+	return ""
+}
+
+// CustomChainProvider returns the first provider of the chain list
+// that has content. If no chain is provided it returns a random provider. If no
+// provider has content it will return an empty string.
+//
+// Any provider not in the list won't count the in the chain at all, it will be ignored.
+func (content Provider) CustomChainProvider(chain []string) string {
+	if len(chain) == 0 {
+		for p := range content {
+			return p
+		}
+	}
+
+	for _, p := range chain {
+		if content[p] != "" {
+			return p
 		}
 	}
 

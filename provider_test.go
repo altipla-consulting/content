@@ -108,10 +108,6 @@ func TestProviderGlobalChain(t *testing.T) {
 			"baz",
 		},
 		{
-			Provider{"other1": "foo", "other2": "bar", "dingus": "baz"},
-			"baz",
-		},
-		{
 			Provider{"foo": "bar"},
 			"",
 		},
@@ -126,6 +122,42 @@ func TestProviderCustomChain(t *testing.T) {
 
 	content := Provider{"altipla": "foo", "hotelbeds": "bar", "dingus": "baz"}
 	require.Equal(t, content.CustomChain([]string{"altipla", "hotelbeds", "dingus"}), "foo")
+}
+
+func TestGlobalChainProvider(t *testing.T) {
+	SetGlobalProviderChain([]string{"altipla", "hotelbeds", "dingus"})
+
+	tests := []struct {
+		content  Provider
+		provider string
+	}{
+		{
+			Provider{"altipla": "foo", "hotelbeds": "bar", "dingus": "baz"},
+			"altipla",
+		},
+		{
+			Provider{"other1": "foo", "hotelbeds": "bar", "dingus": "baz"},
+			"hotelbeds",
+		},
+		{
+			Provider{"other1": "foo", "other2": "bar", "dingus": "baz"},
+			"dingus",
+		},
+		{
+			Provider{"foo": "bar"},
+			"",
+		},
+	}
+	for _, test := range tests {
+		require.Equal(t, test.content.ChainProvider(), test.provider)
+	}
+}
+
+func TestCustomChainProvider(t *testing.T) {
+	SetGlobalProviderChain([]string{"dingus", "tirpadvisor", "other"})
+
+	content := Provider{"altipla": "foo", "hotelbeds": "bar", "dingus": "baz"}
+	require.Equal(t, content.CustomChainProvider([]string{"altipla", "hotelbeds", "dingus"}), "altipla")
 }
 
 func TestProviderSaveNil(t *testing.T) {
