@@ -58,7 +58,9 @@ func (content TranslatedProvider) CustomChain(chain []string) Translated {
 	result := make(Translated)
 	for _, p := range inverseChain {
 		for lang, value := range content[p] {
-			result[lang] = value
+			if value != "" {
+				result[lang] = value
+			}
 		}
 	}
 
@@ -87,8 +89,10 @@ func (content TranslatedProvider) CustomChainProvider(chain []string) Translated
 
 	result := make(Translated)
 	for _, p := range inverseChain {
-		for lang := range content[p] {
-			result[lang] = p
+		for lang, value := range content[p] {
+			if value != "" {
+				result[lang] = p
+			}
 		}
 	}
 

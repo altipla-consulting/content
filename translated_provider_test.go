@@ -193,6 +193,21 @@ func TestTranslatedProviderGlobalChain(t *testing.T) {
 			},
 			Translated{},
 		},
+		{
+			TranslatedProvider{
+				"altipla": Translated{
+					"es": "",
+				},
+				"hotelbeds": Translated{
+					"es": "bar-es",
+					"en": "bar-en",
+				},
+			},
+			Translated{
+				"es": "bar-es",
+				"en": "bar-en",
+			},
+		},
 	}
 	for _, test := range tests {
 		require.Equal(t, test.content.Chain(), test.chain)
@@ -315,6 +330,21 @@ func TestTranslatedProviderGlobalChainProvider(t *testing.T) {
 				},
 			},
 			Translated{},
+		},
+		{
+			TranslatedProvider{
+				"altipla": Translated{
+					"es": "",
+				},
+				"hotelbeds": Translated{
+					"es": "bar-es",
+					"en": "bar-en",
+				},
+			},
+			Translated{
+				"es": "hotelbeds",
+				"en": "hotelbeds",
+			},
 		},
 	}
 	for _, test := range tests {
