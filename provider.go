@@ -61,7 +61,7 @@ func (content Provider) CustomChainProvider(chain []string) string {
 		}
 	}
 
-	return ""
+	return chain[0]
 }
 
 func (content Provider) Value() (driver.Value, error) {
