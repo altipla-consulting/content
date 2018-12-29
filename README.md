@@ -1,6 +1,8 @@
 
 # content
 
+> **DEPRECATED:** Use https://github.com/altipla-consulting/libs instead.
+
 [![GoDoc](https://godoc.org/github.com/altipla-consulting/content?status.svg)](https://godoc.org/github.com/altipla-consulting/content)
 
 > Models for translated content coming from multiple providers.
